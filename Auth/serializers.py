@@ -3,9 +3,16 @@ from .models import CustomUser
 from django.contrib.auth import authenticate
 
 class UserSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
     class Meta:
         model = CustomUser
-        fields = ['name','email','slug']
+        fields = ['name','email','slug','image_url']
+
+    def get_image_url(self,obj):
+        request = self.context.get('request')
+        if obj.image:
+            return request.build_absolute_uri(obj.image.url)
+        return None
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()

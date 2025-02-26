@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator,MinValueValidator
@@ -9,11 +10,12 @@ from helpers import generate_unique_hash
 # Create your models here.
 class CustomUser(AbstractUser):
     username = None
-    name = models.CharField(max_length=255,null=True,blank=True)
+    # name = models.CharField(max_length=255,null=True,blank=True)
     email = models.EmailField(unique=True)
     ph_no = models.CharField(max_length=20,null=True,blank=True)
     slug = models.SlugField(unique=True, null=True, blank=True)
     is_verified = models.BooleanField(default=False)
+    user_image = models.ImageField(upload_to = 'images/user/',null=True, blank=True)
     phone_no = models.IntegerField(validators=[MaxValueValidator(999999999999),MinValueValidator(000000000000)],null=True, blank=True,default=None)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -33,6 +35,12 @@ class CustomUser(AbstractUser):
         if not self.slug:
             self.slug = generate_unique_hash()
         super(CustomUser, self).save(*args, **kwargs)
+
+    def image_url(self):
+        """Return full image URL"""
+        if self.image:
+            return f"{settings.MEDIA_URL}{self.image.name}"
+        return None
 
 
 class Address(models.Model):

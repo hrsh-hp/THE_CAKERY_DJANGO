@@ -3,7 +3,11 @@ from django.shortcuts import render
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view,authentication_classes,permission_classes
 from rest_framework.permissions import AllowAny
+
+from Auth.models import CustomUser
 from .serializers import LoginSerializer
+from django.contrib.auth import authenticate
+
 # Create your views here.
 
 @api_view(['POST'])
@@ -11,16 +15,19 @@ from .serializers import LoginSerializer
 @permission_classes([AllowAny])
 def LoginView(request):
     data = {'data':{},'error':False,'message':None}
-    try:
+    try:    
         body = request.data
-        serialzed_data = LoginSerializer(data=body)
-        if not serialzed_data.is_valid():
-            raise Exception(serialzed_data.errors)
-        print(serialzed_data.validated_data)
-        user = serialzed_data.validated_data["user"]
-        token, created = Token.objects.get_or_create(user=user)
+        if 'email' not in body or 'password' not in body: raise Exception("Parameters Missing")
+        email = body['email']
+        password = body['password']
+        user = CustomUser.objects.get(email=email)
+        if not user: raise Exception("User with this email does not exist!")
+        authenticated_user = authenticate(email=user.email,password=password)
+        if not authenticated_user: raise Exception("Incorrect Email or Password!!")
+        token, created = Token.objects.get_or_create(user=authenticated_user)
         data['data']['token']=token.key
-        data['data']['slug']=user.slug
+        data['data']['user']={"email":authenticated_user.email,"name":f"{authenticated_user.first_name}" if user.first_name else None,"slug":authenticated_user.slug}
+        print(data)
         return JsonResponse(data,status=200)
     except Exception as e:
         print(e)
