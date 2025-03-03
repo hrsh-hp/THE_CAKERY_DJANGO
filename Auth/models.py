@@ -12,7 +12,6 @@ class CustomUser(AbstractUser):
     username = None
     # name = models.CharField(max_length=255,null=True,blank=True)
     email = models.EmailField(unique=True)
-    ph_no = models.CharField(max_length=20,null=True,blank=True)
     slug = models.SlugField(unique=True, null=True, blank=True)
     is_verified = models.BooleanField(default=False)
     user_image = models.ImageField(upload_to = 'images/user/',null=True, blank=True)
@@ -45,7 +44,7 @@ class CustomUser(AbstractUser):
 
 class Address(models.Model):
     address_text = models.TextField()
-    user = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser,on_delete=models.CASCADE,related_name='address_set')
     longitude = models.CharField(max_length=255,null=True,blank=True)
     latitude = models.CharField(max_length=255,null=True,blank=True)
     slug = models.SlugField(unique=True,null=True,blank=True)
