@@ -3,32 +3,17 @@ from .models import CustomUser
 from django.contrib.auth import authenticate
 
 class UserSerializer(serializers.ModelSerializer):
-    image = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
     class Meta:
         model = CustomUser
         fields = ['name','email','slug','image_url']
 
+    def get_name(self,obj):
+        return f"{obj.first_name} {obj.last_name}"
+
     def get_image_url(self,obj):
         request = self.context.get('request')
-        if obj.image:
-            return request.build_absolute_uri(obj.image.url)
+        if obj.user_image:
+            return request.build_absolute_uri(obj.user_image.url)
         return None
-
-class LoginSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-    password = serializers.CharField(write_only=True)
-
-    def validate(self, data):
-        email = data.get('email')
-        password = data.get('password')
-        try:
-            user = CustomUser.objects.get(email=email)
-        except CustomUser.DoesNotExist:
-            raise  serializers.ValidationError("User with this email does not exist")
-
-        user = authenticate(email=user.email,password=password) 
-        if user:
-            data["user"] = user 
-            return data
-        raise serializers.ValidationError({"password":"Incorrect email or password"})        
-              
