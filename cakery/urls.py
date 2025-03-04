@@ -20,6 +20,7 @@ from django.urls import path,include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/',include('Auth.urls')),
+    path('cake/',include('cakes.urls')),
 ]
 
 from django.conf import settings
