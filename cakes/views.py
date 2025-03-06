@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
 from cakes.serializers import CakeFullSerializer, CakeHomeSerializer, CartSerializer
-from cakes.models import Cake,CakeLike,CakeSize, Cart, CartItems
+from cakes.models import Cake,CakeLike,CakeSize, Cart, CartItems, Topping
 
 # Create your views here.
 @api_view(['GET'])
@@ -86,6 +86,7 @@ def add_to_cart(request):
         if 'cake_slug' not in body or 'size_slug' not in body : raise Exception("Parameters missing")
         cake_slug = body.get('cake_slug')
         size_slug = body.get('size_slug')
+        toppings_slugs = request.data.get("toppings", [])
         quantity = int(body.get('quantity',1))
         if quantity < 1: raise Exception("Quantity should be greater than 0")
         cart = Cart.get_or_create_active_cart(user)
@@ -93,18 +94,40 @@ def add_to_cart(request):
         if not cake: raise Exception("Cake not found")
         size = CakeSize.objects.filter(slug=size_slug).first()
         if not size: raise Exception("Size not available")
+        selected_toppings = list(Topping.objects.filter(slug__in=toppings_slugs))
+        existing_cart_items = CartItems.objects.filter(cart=cart, cake=cake, size=size)
 
-        cart_item, created = CartItems.objects.get_or_create(cart=cart, cake=cake, size=size)
-        if not created:
-            cart_item.quantity += quantity
-        else:
-            cart_item.quantity = quantity
-        cart_item.save()
-
-        cart_serialized = CartSerializer(cart)
+        for item in existing_cart_items:
+            item_toppings = list(item.toppings.values_list("slug", flat=True))
+            if sorted(item_toppings) == sorted(toppings_slugs):
+                # Update quantity if exact match found
+                item.quantity += quantity
+                item.save()
+                data['data']['success'] = True
+                return JsonResponse(data, status=200)
+            
+        new_cart_item = CartItems.objects.create(cart=cart, cake=cake, size=size, quantity=quantity)
+        new_cart_item.toppings.set(selected_toppings)
         data['data']['success'] = True
         return JsonResponse(data,status=200)
     
+    except Exception as e:
+        data['error'] = True
+        data['message'] = str(e)
+        print(e)
+        return JsonResponse(data,status=500)
+    
+@api_view(['GET'])
+def get_cart_details(request):
+    data = {'data':[],'error':False,'message':None}
+    try:
+        user = request.user
+        cart_obj = Cart.objects.filter(user=user,is_paid=False).first()
+        if cart_obj: 
+            cart_serialized = CartSerializer(cart_obj,context={'request':request})
+            # print(cart_serialized.data)
+            data['data'] = cart_serialized.data
+        return JsonResponse(data,status=200)
     except Exception as e:
         data['error'] = True
         data['message'] = str(e)

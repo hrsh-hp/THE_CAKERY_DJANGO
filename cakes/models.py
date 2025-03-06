@@ -4,7 +4,20 @@ from django.db import models
 from Auth.models import CustomUser
 from helpers import generate_unique_hash
 
-# Create your models here.
+
+class Topping(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    price = models.DecimalField(max_digits=6, decimal_places=2)
+    slug = models.SlugField(unique=True,null=True,blank=True)
+
+    def __str__(self):
+        return f"{self.name} - ₹{self.price}"
+    
+    def save(self,*args, **kwargs):
+        if not self.slug:
+            self.slug = generate_unique_hash()
+        super(Topping, self).save(*args, **kwargs)
+    
 class Cake(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
@@ -13,6 +26,7 @@ class Cake(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     available_toppings = models.BooleanField(default=True)
+    toppings = models.ManyToManyField(Topping, blank=True)
     slug = models.SlugField(unique=True,null=True,blank=True)
 
     def __str__(self):
@@ -43,13 +57,14 @@ class CakeSize(models.Model):
             self.slug = generate_unique_hash()
         super(CakeSize, self).save(*args, **kwargs)
 
+
 class CakeLike(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     cake = models.ForeignKey(Cake, related_name="likes", on_delete=models.CASCADE)
-    liked = models.BooleanField(default=True)  # True if liked, False if unliked
+    liked = models.BooleanField(default=True)  
 
     class Meta:
-        unique_together = ('user', 'cake')  # user can like a cake only once
+        unique_together = ('user', 'cake')  
 
     def __str__(self):
         return f"{self.user.email} {'liked' if self.liked else 'unliked'} {self.cake.name}"
@@ -87,9 +102,8 @@ class CartItems(models.Model):
     cake = models.ForeignKey(Cake,  on_delete=models.CASCADE)
     size = models.ForeignKey(CakeSize, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
+    toppings = toppings = models.ManyToManyField(Topping, blank=True)
     
-    class Meta:
-        unique_together = ("cart", "cake", "size")
 
     def __str__(self) -> str:
         if self.cake:
@@ -98,6 +112,8 @@ class CartItems(models.Model):
             return f"{self.cart.user.email} - cart item - None"
     
     def get_item_price(self):
-        if self.item:
-            return self.size.price * self.quantity
+        if self.cake:
+            base_price = self.size.price
+            toppings_price = sum(t.price for t in self.toppings.all())
+            return (base_price + toppings_price) * self.quantity
         

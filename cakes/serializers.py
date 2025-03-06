@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.db import models
 
-from cakes.models import Cake, CakeLike, CakeSize, Cart, CartItems
+from cakes.models import Cake, CakeLike, CakeSize, Cart, CartItems, Topping
 
 class CakeHomeSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
@@ -40,15 +40,21 @@ class SizesSerializer(serializers.ModelSerializer):
         model = CakeSize
         fields = ['size','price','slug']
 
+class ToppingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Topping
+        fields = ['name','price','slug']
+
 class CakeFullSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
     liked = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField()
     sizes = SizesSerializer(many=True)
+    toppings = ToppingsSerializer(many=True)
 
     class Meta:
         model = Cake
-        fields = ['name','slug','image_url','liked','likes_count','description','available_toppings','sizes']
+        fields = ['name','slug','image_url','liked','likes_count','description','available_toppings','sizes','toppings']
 
     def get_image_url(self,obj):
         request = self.context.get('request')
@@ -72,9 +78,10 @@ class CartSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
     del_address = serializers.SerializerMethodField()
     cart_items = serializers.SerializerMethodField()
+
     class Meta:
         model = Cart
-        fields = ['slug','cart_total','user','cart_items','del_address']
+        fields = ['slug','cart_total','user','del_address','cart_items']
 
     def get_cart_total(self,obj):
         return obj.get_cart_total()
@@ -87,20 +94,23 @@ class CartSerializer(serializers.ModelSerializer):
     
     def get_cart_items(self,obj):
         cart_items = obj.cart_items.all()
-        return CartItemsSerializer(cart_items,many=True).data
+        return CartItemsSerializer(cart_items,many=True,context={'request':self.context.get('request')}).data
     
 
 class CartItemsSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
     cake_name = serializers.SerializerMethodField()
     cake_price = serializers.SerializerMethodField()
+    # size = SizesSerializer()
+    toppings = ToppingsSerializer(many=True)
+    
     class Meta:
         model = CartItems
-        fields = ['cake_name','cake_price','size','quantity','image_url']
-
+        fields = ['cake_name','cake_price','size','quantity','toppings','image_url']
+    
     def get_image_url(self,obj):
         request = self.context.get('request')
-        if obj.cake.image:
+        if obj.cake.image and request:
             return request.build_absolute_uri(obj.cake.image.url)
         return None
     
