@@ -81,7 +81,7 @@ class Cart(models.Model):
     def get_cart_total(self):
         cart_items = CartItems.objects.filter(cart__is_paid=False,cart=self)
     
-        return sum(cart_item.size.price * cart_item.quantity for cart_item in cart_items)
+        return sum(cart_item.get_item_price() for cart_item in cart_items)
     
     def save(self,*args, **kwargs):
         if not self.slug:
@@ -103,7 +103,7 @@ class CartItems(models.Model):
     size = models.ForeignKey(CakeSize, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
     toppings = toppings = models.ManyToManyField(Topping, blank=True)
-    
+    slug = models.SlugField(unique=True, null=True, blank=True)
 
     def __str__(self) -> str:
         if self.cake:
@@ -117,3 +117,7 @@ class CartItems(models.Model):
             toppings_price = sum(t.price for t in self.toppings.all())
             return (base_price + toppings_price) * self.quantity
         
+    def save(self,*args, **kwargs):
+        if not self.slug:
+            self.slug = generate_unique_hash()
+        super(CartItems, self).save(*args, **kwargs)

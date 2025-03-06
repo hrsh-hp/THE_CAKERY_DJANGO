@@ -103,10 +103,11 @@ class CartItemsSerializer(serializers.ModelSerializer):
     cake_price = serializers.SerializerMethodField()
     # size = SizesSerializer()
     toppings = ToppingsSerializer(many=True)
+    size = serializers.SerializerMethodField()
     
     class Meta:
         model = CartItems
-        fields = ['cake_name','cake_price','size','quantity','toppings','image_url']
+        fields = [ 'slug','cake_name','cake_price','size','quantity','toppings','image_url']
     
     def get_image_url(self,obj):
         request = self.context.get('request')
@@ -114,6 +115,9 @@ class CartItemsSerializer(serializers.ModelSerializer):
             return request.build_absolute_uri(obj.cake.image.url)
         return None
     
+    def get_size(self,obj):
+        return obj.size.size
+
     def get_cake_name(self,obj):
         return obj.cake.name
     
