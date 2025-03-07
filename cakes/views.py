@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
-from cakes.serializers import CakeFullSerializer, CakeHomeSerializer, CartSerializer
-from cakes.models import Cake,CakeLike,CakeSize, Cart, CartItems, Topping
+from cakes.serializers import CakeFullSerializer, CakeHomeSerializer, CartSerializer, OrderSerializer
+from cakes.models import Cake,CakeLike,CakeSize, Cart, CartItems, Order, Payment, Topping
 
 # Create your views here.
 @api_view(['GET'])
@@ -119,14 +119,75 @@ def add_to_cart(request):
     
 @api_view(['GET'])
 def get_cart_details(request):
-    data = {'data':[],'error':False,'message':None}
+    data = {'data':{},'error':False,'message':None}
     try:
         user = request.user
-        cart_obj = Cart.objects.filter(user=user,is_paid=False).first()
+        cart_obj = Cart.objects.filter(user=user,is_ordered=False).first()
         if cart_obj: 
             cart_serialized = CartSerializer(cart_obj,context={'request':request})
             # print(cart_serialized.data)
             data['data'] = cart_serialized.data
+        return JsonResponse(data,status=200)
+    except Exception as e:
+        data['error'] = True
+        data['message'] = str(e)
+        print(e)
+        return JsonResponse(data,status=500)
+    
+@api_view(['POST'])
+def remove_cart_item(request):
+    data = {'data':{},'error':False,'message':None}
+    try:
+        user = request.user
+        body = request.data
+        if 'cart_item_slug' not in body: raise Exception("Parameters missing")
+        cart_item_slug = body.get('cart_item_slug')
+        cart_item = CartItems.objects.filter(slug=cart_item_slug).first()
+        if not cart_item: raise Exception("Cart item not found")
+        cart = cart_item.cart
+        if cart.user != user: raise Exception("Unauthorized")
+        cart_item.delete()
+        data['data']['success'] = True
+        return JsonResponse(data,status=200)
+    except Exception as e:
+        data['error'] = True
+        data['message'] = str(e)
+        print(e)
+        return JsonResponse(data,status=500)
+    
+@api_view(['POST'])
+def place_order(request):
+    data = {'data':{},'error':False,'message':None}
+    try:
+        user = request.user
+        body = request.data
+        if 'del_address' not in body or 'payment_method' not in body or 'final_total' not in body: raise Exception("Parameters missing")
+        cart = Cart.objects.filter(user=user,is_ordered=False).first()
+        if not cart: raise Exception("Active cart not found")
+        total_price = body.get('final_total')
+        order_obj = Order.objects.create(user=user, cart=cart,total_price=total_price,del_address=body.get('del_address'),status="pending")
+        payment_method=body.get('payment_method')
+        payment_obj = Payment.objects.create(order=order_obj,payment_method=payment_method,is_paid=True if payment_method == "cash" else False)
+        cart.is_ordered = True
+        cart.save()
+        Cart.get_or_create_active_cart(user)
+        data['data']['success'] = True
+        return JsonResponse(data,status=200)
+    except Exception as e:
+        data['error'] = True
+        data['message'] = str(e)
+        print(e)
+        return JsonResponse(data,status=500)
+    
+@api_view(['GET'])
+def get_order_details(request):
+    data = {'data':[],'error':False,'message':None}
+    try:
+        user = request.user
+        orders = Order.objects.filter(user=user).order_by('created_at').reverse()
+        if not orders: raise Exception("No orders found for this user")
+        order_serialized = OrderSerializer(orders,many=True,context={'request':request})
+        data['data'] = order_serialized.data
         return JsonResponse(data,status=200)
     except Exception as e:
         data['error'] = True

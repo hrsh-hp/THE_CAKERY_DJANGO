@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.db import models
 
-from cakes.models import Cake, CakeLike, CakeSize, Cart, CartItems, Topping
+from cakes.models import Cake, CakeLike, CakeSize, Cart, CartItems, Order, Payment, Topping
 
 class CakeHomeSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
@@ -123,3 +123,24 @@ class CartItemsSerializer(serializers.ModelSerializer):
     
     def get_cake_price(self,obj):
         return obj.get_item_price()
+    
+class PaymentSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Payment
+        fields = ['payment_method','is_paid','transaction_id']
+
+class OrderSerializer(serializers.ModelSerializer):
+    items = serializers.SerializerMethodField()
+    payment = PaymentSerializer(read_only=True)
+    created_at = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Order
+        fields = ['slug','total_price','del_address','status','items','payment','created_at']
+
+    def get_items(self, obj):
+        return CartItemsSerializer(obj.cart.cart_items.all(), many=True,context={'request':self.context.get('request')}).data
+    
+    def get_created_at(self, obj):
+        return obj.created_at.strftime("%b %d, %Y")
