@@ -165,7 +165,7 @@ def place_order(request):
         cart = Cart.objects.filter(user=user,is_ordered=False).first()
         if not cart: raise Exception("Active cart not found")
         total_price = body.get('final_total')
-        order_obj = Order.objects.create(user=user, cart=cart,total_price=total_price,del_address=body.get('del_address'),status="pending")
+        order_obj = Order.objects.create(user=user, cart=cart,total_price=total_price,del_address=body.get('del_address'),status="confirmed")
         payment_method=body.get('payment_method')
         payment_obj = Payment.objects.create(order=order_obj,payment_method=payment_method,is_paid=True if payment_method == "cash" else False)
         cart.is_ordered = True
@@ -188,6 +188,47 @@ def get_order_details(request):
         if not orders: raise Exception("No orders found for this user")
         order_serialized = OrderSerializer(orders,many=True,context={'request':request})
         data['data'] = order_serialized.data
+        return JsonResponse(data,status=200)
+    except Exception as e:
+        data['error'] = True
+        data['message'] = str(e)
+        print(e)
+        return JsonResponse(data,status=500)
+    
+@api_view(['POST'])
+def mark_order_complete(request):
+    data = {'data':{},'error':False,'message':None}
+    try:
+        body = request.data
+        if 'order_slug' not in body: raise Exception("Parameters missing")
+        order_obj = Order.objects.filter(slug=body['order_slug']).first()
+        if not order_obj: raise Exception("Can not find this order")
+        order_obj.status = "delivered"
+        payment_obj = Payment.objects.get(order=order_obj)
+        payment_obj.is_paid=True
+        order_obj.save()
+        data['data']['success']=True
+        return JsonResponse(data,status=200)
+    except Exception as e:
+        data['error'] = True
+        data['message'] = str(e)
+        print(e)
+        return JsonResponse(data,status=500)
+    
+@api_view(['POST'])
+def mark_order_cancel(request):
+    data = {'data':{},'error':False,'message':None}
+    try:
+        body = request.data
+        if 'order_slug' not in body: raise Exception("Parameters missing")
+        order_obj = Order.objects.filter(slug=body['order_slug']).first()
+        if not order_obj: raise Exception("Can not find this order")
+        order_obj.status = "cancelled"
+        payment_obj = Payment.objects.get(order=order_obj)
+        if payment_obj.payment_method=="cash":
+            payment_obj.is_paid=False
+        order_obj.save()
+        data['data']['success']=True
         return JsonResponse(data,status=200)
     except Exception as e:
         data['error'] = True

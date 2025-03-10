@@ -126,7 +126,6 @@ class Order(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('confirmed', 'Confirmed'),
-        ('shipped', 'Shipped'),
         ('delivered', 'Delivered'),
         ('cancelled', 'Cancelled'),
     ]
@@ -164,6 +163,23 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"Payment for Order {self.order.id} by {self.order.user.email} - {'Paid' if self.is_paid else 'Pending'}"
+    
+    def save(self,*args, **kwargs):
+        if not self.slug:
+            self.slug = generate_unique_hash()
+        super(Payment, self).save(*args, **kwargs)
+
+class Review(models.Model):
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name="review")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    rating = models.PositiveIntegerField(choices=[(i, str(i)) for i in range(1, 6)])
+    review_text = models.TextField(blank=True, null=True) 
+    tags = models.JSONField(default=list, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    slug = models.SlugField(unique=True, null=True, blank=True)
+    
+    def __str__(self):
+        return f"Review for Order {self.order.id} - {self.rating} Stars by {self.user}"
     
     def save(self,*args, **kwargs):
         if not self.slug:
