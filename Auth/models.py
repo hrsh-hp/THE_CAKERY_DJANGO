@@ -8,7 +8,9 @@ from helpers import generate_unique_hash
 
 
 # Create your models here.
+ROLES = [('user','User'),('admin','Admin'),('delivery_person','Delivery Person')]
 class CustomUser(AbstractUser):
+
     username = None
     # name = models.CharField(max_length=255,null=True,blank=True)
     email = models.EmailField(unique=True)
@@ -18,6 +20,7 @@ class CustomUser(AbstractUser):
     phone_no = models.IntegerField(validators=[MaxValueValidator(999999999999),MinValueValidator(000000000000)],null=True, blank=True,default=None)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    role = models.CharField(max_length=255,choices=ROLES,default='user')
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -56,3 +59,17 @@ class Address(models.Model):
         if not self.slug:
             self.slug = generate_unique_hash()
         super(Address, self).save(*args, **kwargs)
+
+class DeliveryPerson(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="delivery_profile")
+    vehicle_number = models.CharField(max_length=20, unique=True, blank=True, null=True)
+    assigned_orders = models.ManyToManyField("cakes.Order", related_name="assigned_delivery", blank=True)
+    slug = models.SlugField(unique=True,null=True,blank=True)
+
+    def __str__(self):
+        return f"Delivery Person - {self.user.email}"
+    
+    def save(self,*args, **kwargs):
+        if not self.slug:
+            self.slug = generate_unique_hash()
+        super(DeliveryPerson, self).save(*args, **kwargs)

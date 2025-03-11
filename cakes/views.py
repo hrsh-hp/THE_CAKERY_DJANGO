@@ -1,8 +1,10 @@
+import random
 from django.shortcuts import render
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
-from cakes.serializers import CakeFullSerializer, CakeHomeSerializer, CartSerializer, OrderSerializer
-from cakes.models import Cake,CakeLike,CakeSize, Cart, CartItems, Order, Payment, Topping
+from Auth.models import DeliveryPerson
+from cakes.serializers import CakeFullSerializer, CakeHomeSerializer, CartSerializer, OrderSerializer, ReviewSerializer
+from cakes.models import Cake,CakeLike,CakeSize, Cart, CartItems, Order, Payment, Review, Topping
 
 # Create your views here.
 @api_view(['GET'])
@@ -166,6 +168,8 @@ def place_order(request):
         if not cart: raise Exception("Active cart not found")
         total_price = body.get('final_total')
         order_obj = Order.objects.create(user=user, cart=cart,total_price=total_price,del_address=body.get('del_address'),status="confirmed")
+        order_obj.delivery_person = random.choice(DeliveryPerson.objects.all())
+        order_obj.save()
         payment_method=body.get('payment_method')
         payment_obj = Payment.objects.create(order=order_obj,payment_method=payment_method,is_paid=True if payment_method == "cash" else False)
         cart.is_ordered = True
@@ -229,6 +233,55 @@ def mark_order_cancel(request):
             payment_obj.is_paid=False
         order_obj.save()
         data['data']['success']=True
+        return JsonResponse(data,status=200)
+    except Exception as e:
+        data['error'] = True
+        data['message'] = str(e)
+        print(e)
+        return JsonResponse(data,status=500)
+    
+@api_view(['POST'])
+def submit_review(request):
+    data = {'data':{},'error':False,'message':None}
+    try:
+        user = request.user
+        body = request.data
+        if 'order_slug' not in body or 'rating' not in body or 'delivery_person_slug' not in body: raise Exception("Missing required parameters")
+        print(body)
+        order_obj = Order.objects.filter(slug=body['order_slug'],user=user).first()
+        if not order_obj: raise Exception("Order not found or Unauthorized")
+        if order_obj.status != "delivered": raise Exception("Review can be submitted only for delivered orders")
+        # delivery_person = DeliveryPerson.objects.filter(slug=body['delivery_person_slug']).first()
+        # if not delivery_person: raise Exception("Delivery person not found")
+        review, created = Review.objects.get_or_create(
+            order=order_obj,
+            user=user,
+            defaults={
+                "rating": int(float(body["rating"])),
+                "review_text": body.get("feedback", ""),
+                "tags": body.get("tags", [])
+            }
+        )
+        if not created:raise Exception("Review already submitted for this order")
+        data['data']['success']=True
+        return JsonResponse(data,status=200)
+    except Exception as e:
+        data['error'] = True
+        data['message'] = str(e)
+        print(e)
+        return JsonResponse(data,status=500)
+    
+@api_view(['GET'])
+def get_review_details(request,order_slug):
+    data = {'data':[],'error':False,'message':None}
+    try:
+        user = request.user
+        order_obj = Order.objects.filter(user=user,slug=order_slug).first()
+        if not order_obj: raise Exception("No orders found")
+        review_obj = Review.objects.filter(order=order_obj).first()
+        if not review_obj: raise Exception("No review found for this order")
+        review_serialized = ReviewSerializer(review_obj,context={'request':request})
+        data['data'] = review_serialized.data
         return JsonResponse(data,status=200)
     except Exception as e:
         data['error'] = True

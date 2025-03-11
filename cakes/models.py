@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db import models
 
-from Auth.models import CustomUser
+from Auth.models import CustomUser, DeliveryPerson
 from helpers import generate_unique_hash
 
 
@@ -136,6 +136,7 @@ class Order(models.Model):
     del_address = models.TextField()
     # payment_method = models.CharField(max_length=50, default="UPI")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    delivery_person = models.ForeignKey(DeliveryPerson, on_delete=models.SET_NULL, null=True, blank=True, related_name="orders")
     created_at = models.DateTimeField(auto_now_add=True)
     slug = models.SlugField(unique=True, null=True, blank=True)
 
@@ -184,4 +185,4 @@ class Review(models.Model):
     def save(self,*args, **kwargs):
         if not self.slug:
             self.slug = generate_unique_hash()
-        super(Payment, self).save(*args, **kwargs)
+        super(Review, self).save(*args, **kwargs)

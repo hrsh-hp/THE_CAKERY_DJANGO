@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from django.db import models
 
-from cakes.models import Cake, CakeLike, CakeSize, Cart, CartItems, Order, Payment, Topping
+from Auth.serializers import DeliveryPersonSerializer
+from cakes.models import Cake, CakeLike, CakeSize, Cart, CartItems, Order, Payment, Review, Topping
 
 class CakeHomeSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
@@ -134,13 +135,23 @@ class OrderSerializer(serializers.ModelSerializer):
     items = serializers.SerializerMethodField()
     payment = PaymentSerializer(read_only=True)
     created_at = serializers.SerializerMethodField()
+    delivery_person = DeliveryPersonSerializer(read_only=True)
+    is_reviewed = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
-        fields = ['slug','total_price','del_address','status','items','payment','created_at']
+        fields = ['slug','total_price','del_address','status','items','payment','created_at','delivery_person','is_reviewed']
 
     def get_items(self, obj):
         return CartItemsSerializer(obj.cart.cart_items.all(), many=True,context={'request':self.context.get('request')}).data
     
     def get_created_at(self, obj):
         return obj.created_at.strftime("%b %d, %Y")
+    
+    def get_is_reviewed(self, obj):
+        return hasattr(obj, "review") and obj.review is not None
+    
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ['rating','review_text','slug','tags']

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CustomUser,Address
+from .models import CustomUser,Address, DeliveryPerson
 from django.contrib.auth import authenticate
 
 class UserSerializer(serializers.ModelSerializer):
@@ -7,7 +7,7 @@ class UserSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
     class Meta:
         model = CustomUser
-        fields = ['name','email','slug','image_url']
+        fields = ['name','email','slug','image_url','role']
 
     def get_name(self,obj):
         return f"{obj.first_name} {obj.last_name}"
@@ -36,3 +36,16 @@ class FullUserDetailsSerializer(serializers.ModelSerializer):
         if obj.user_image and hasattr(obj.user_image, 'url'):
             return request.build_absolute_uri(obj.user_image.url)
         return None
+
+class DeliveryPersonSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
+    phone_no = serializers.SerializerMethodField()
+    class Meta:
+        model = DeliveryPerson
+        fields = ['name','vehicle_number','slug','phone_no']
+    
+    def get_name(self,obj):
+        return f"{obj.user.first_name} {obj.user.last_name}"
+    
+    def get_phone_no(self,obj):
+        return obj.user.phone_no
