@@ -1,12 +1,52 @@
+import json
 import random
 from django.shortcuts import render
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
 from Auth.models import DeliveryPerson
-from cakes.serializers import CakeFullSerializer, CakeHomeSerializer, CartSerializer, OrderSerializer, ReviewSerializer
+from cakes.serializers import CakeFullSerializer, CakeHomeSerializer, CartSerializer, OrderSerializer, ReviewSerializer, ToppingsSerializer
 from cakes.models import Cake,CakeLike,CakeSize, Cart, CartItems, Order, Payment, Review, Topping
+from django.core.files.storage import default_storage
 
 # Create your views here.
+@api_view(['POST'])
+def add_cake(request):
+    data = {'data':{},'error':False,'message':None}
+    try:
+        user = request.user
+        if user.role != "admin": raise Exception("Unauthorized")
+        body = request.data
+        # print(body)
+        if 'name' not in body or "description" not in body or "sizes" not in body: raise Exception("Parameters missing")
+        name = body.get('name')
+        description = body.get("description")
+        available_toppings = body.get("available_toppings", "false").lower() in ["true", "1"]
+        toppings_slugs = json.loads(body.get("toppings", []))
+        sizes_data = json.loads( body.get("sizes"))
+        image = request.FILES.get("image")
+        image_path = None
+        if image: image_path = default_storage.save(f"images/cakes/{image.name}", image)
+        cake_obj = Cake.objects.create(
+            name=name,
+            description=description,
+            available_toppings=available_toppings,
+            image=image_path
+        )
+        for size in sizes_data:
+            if "size" in size and "price" in size:
+                CakeSize.objects.create(cake=cake_obj, size=size["size"], price=size["price"])
+        valid_toppings = Topping.objects.filter(slug__in=toppings_slugs)
+        cake_obj.toppings.set(valid_toppings)
+        cake_obj.save()
+        data['data']['success'] = True
+        return JsonResponse(data,status=200)
+    except Exception as e:
+        data['error'] = True
+        data['message'] = str(e)
+        print(e)
+        return JsonResponse(data,status=500)
+
+
 @api_view(['GET'])
 def get_home_cake_details(request):
     data = {'data':[],'error':False,'message':None}
@@ -29,6 +69,21 @@ def get_full_cake_details(request, cake_slug):
         if not cakes: raise Exception("Cake not found")
         cakes_serialized = CakeFullSerializer(cakes,context={'request':request})
         data['data'] = cakes_serialized.data
+        return JsonResponse(data,status=200)
+    except Exception as e:
+        data['error'] = True
+        data['message'] = str(e)
+        print(e)
+        return JsonResponse(data,status=500)
+    
+@api_view(['GET'])
+def get_toppings(request):
+    data = {'data':[],'error':False,'message':None}
+    try:
+        if request.user.role != "admin": raise Exception("Unauthorized")
+        toppings_obj = Topping.objects.all()    
+        toppings_serialized = ToppingsSerializer(toppings_obj,many=True)
+        data['data'] = toppings_serialized.data
         return JsonResponse(data,status=200)
     except Exception as e:
         data['error'] = True
@@ -189,7 +244,7 @@ def get_order_details(request):
     try:
         user = request.user
         orders = Order.objects.filter(user=user).order_by('created_at').reverse()
-        if not orders: raise Exception("No orders found for this user")
+        # if not orders: raise Exception("No orders found for this user")
         order_serialized = OrderSerializer(orders,many=True,context={'request':request})
         data['data'] = order_serialized.data
         return JsonResponse(data,status=200)
