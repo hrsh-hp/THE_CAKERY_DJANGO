@@ -91,7 +91,9 @@ class CartSerializer(serializers.ModelSerializer):
         return obj.user.email
     
     def get_del_address(self,obj):
-        return obj.user.address_set.first().address_text
+        if obj.user.address_set.first():
+            return obj.user.address_set.first().address_text
+        return "Set Address for Delivery"
     
     def get_cart_items(self,obj):
         cart_items = obj.cart_items.all()
