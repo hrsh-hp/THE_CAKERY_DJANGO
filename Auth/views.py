@@ -29,7 +29,7 @@ def LoginView(request):
         data['data']['token']=token.key
         user_serialized = UserSerializer(authenticated_user,context={'request':request})
         data['data']['user']=user_serialized.data
-        print(data)
+        # print(data)
         return JsonResponse(data,status=200)
     except Exception as e:
         print(e)
@@ -47,7 +47,10 @@ def register_view(request):
         if 'email' not in body or 'password' not in body: raise Exception("Parameters Missing")
         email = body['email']
         password = body['password']
-        user, created = CustomUser.objects.get_or_create(email=email)
+        first_name = body.get('first_name', '')
+        last_name = body.get('last_name', '')
+        phone_no = body.get('phone', '')
+        user, created = CustomUser.objects.get_or_create(email=email,first_name=first_name,last_name=last_name,phone_no=phone_no)   
         if created:
             user.set_password(password)
             user.save()
@@ -56,7 +59,7 @@ def register_view(request):
         # user_serialized = UserSerializer(user,context={'request':request})
         # data['data']['user']=user_serialized.data
         data['data']['success'] = True
-        print(data)
+        # print(data)
         return JsonResponse(data,status=200)
     except Exception as e:
         print(e)
@@ -73,7 +76,7 @@ def get_user_details(request):
         if not user_obj: raise Exception("User not found")
         user_serialized = FullUserDetailsSerializer(user_obj,context={'request':request})
         data['data']['user']=user_serialized.data
-        print(data)
+        # print(data)
         return JsonResponse(data,status=200)
     except Exception as e:
         print(e)
@@ -113,7 +116,7 @@ def update_profile(request):
         user_serialized = UserSerializer(user_obj,context={'request':request})
         data['data']['success']=True
         data['data']['user']=user_serialized.data
-        print(data)
+        # print(data)
         return JsonResponse(data, status=200)  
     except Exception as e:
         print(e)

@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.db import models
 
 from Auth.serializers import DeliveryPersonSerializer
-from cakes.models import Cake, CakeLike, CakeSize, Cart, CartItems, Order, Payment, Review, Topping
+from cakes.models import Cake, CakeLike, CakeSize, Cart, CartItems, Order, Payment, Review, Topping,CakeSponge
 
 class CakeHomeSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
@@ -46,16 +46,22 @@ class ToppingsSerializer(serializers.ModelSerializer):
         model = Topping
         fields = ['name','price','slug']
 
+class CakeSpongeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CakeSponge
+        fields = ['sponge','price','slug']
+
 class CakeFullSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
     liked = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField()
     sizes = SizesSerializer(many=True)
     toppings = ToppingsSerializer(many=True)
+    sponge = CakeSpongeSerializer()
 
     class Meta:
         model = Cake
-        fields = ['name','slug','image_url','liked','likes_count','description','available_toppings','sizes','toppings']
+        fields = ['name','slug','image_url','liked','likes_count','description','available_toppings','sizes','toppings','sponge']
 
     def get_image_url(self,obj):
         request = self.context.get('request')
@@ -139,10 +145,11 @@ class OrderSerializer(serializers.ModelSerializer):
     created_at = serializers.SerializerMethodField()
     delivery_person = DeliveryPersonSerializer(read_only=True)
     is_reviewed = serializers.SerializerMethodField()
+    user = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
-        fields = ['slug','total_price','del_address','status','items','payment','created_at','delivery_person','is_reviewed']
+        fields = ['slug','user','total_price','del_address','status','items','payment','created_at','delivery_person','is_reviewed']
 
     def get_items(self, obj):
         return CartItemsSerializer(obj.cart.cart_items.all(), many=True,context={'request':self.context.get('request')}).data
@@ -152,6 +159,11 @@ class OrderSerializer(serializers.ModelSerializer):
     
     def get_is_reviewed(self, obj):
         return hasattr(obj, "review") and obj.review is not None
+    
+    def get_user(self,obj):
+        if hasattr(obj.user, 'first_name') and hasattr(obj.user, 'last_name'):
+            return f"{obj.user.first_name} {obj.user.last_name}"
+        return obj.user.email
     
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:

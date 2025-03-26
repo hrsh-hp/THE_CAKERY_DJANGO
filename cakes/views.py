@@ -1,11 +1,12 @@
+from decimal import Decimal
 import json
 import random
 from django.shortcuts import render
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
-from Auth.models import DeliveryPerson
-from cakes.serializers import CakeFullSerializer, CakeHomeSerializer, CartSerializer, OrderSerializer, ReviewSerializer, ToppingsSerializer
-from cakes.models import Cake,CakeLike,CakeSize, Cart, CartItems, Order, Payment, Review, Topping
+from Auth.models import CustomUser, DeliveryPerson
+from cakes.serializers import CakeFullSerializer, CakeHomeSerializer, CakeSpongeSerializer, CartSerializer, OrderSerializer, ReviewSerializer, ToppingsSerializer
+from cakes.models import Cake,CakeLike,CakeSize, Cart, CartItems, Order, Payment, Review, Topping, CakeSponge
 from django.core.files.storage import default_storage
 
 # Create your views here.
@@ -14,11 +15,17 @@ def add_cake(request):
     data = {'data':{},'error':False,'message':None}
     try:
         user = request.user
-        if user.role != "admin": raise Exception("Unauthorized")
+        if user.role != "admin" or user.role !='user': raise Exception("Unauthorized")
         body = request.data
         # print(body)
-        if 'name' not in body or "description" not in body or "sizes" not in body: raise Exception("Parameters missing")
+        if 'name' not in body or "description" not in body or "sizes" not in body and 'sponge' not in body: raise Exception("Parameters missing")
         name = body.get('name')
+        sponge = body.get('sponge')
+        if sponge:
+            sponge_obj = CakeSponge.objects.filter(slug=sponge).first()
+            if not sponge_obj: raise Exception("Sponge not found")
+        else:
+            raise Exception("Sponge not given")
         description = body.get("description")
         available_toppings = body.get("available_toppings", "false").lower() in ["true", "1"]
         toppings_slugs = json.loads(body.get("toppings", []))
@@ -30,7 +37,9 @@ def add_cake(request):
             name=name,
             description=description,
             available_toppings=available_toppings,
-            image=image_path
+            image=image_path,
+            sponge=sponge_obj,
+            user = user
         )
         for size in sizes_data:
             if "size" in size and "price" in size:
@@ -46,12 +55,63 @@ def add_cake(request):
         print(e)
         return JsonResponse(data,status=500)
 
+@api_view(['POST'])
+def edit_cake(request):
+    data = {'data':{},'error':False,'message':None}
+    try:
+        user = request.user
+        if user.role != "admin": raise Exception("Unauthorized")
+        body = request.data
+        print(body)
+        if 'slug' not in body: raise Exception("Parameters missing")
+        name = body.get('name')
+        sponge = body.get('sponge')
+        if sponge:
+            sponge_obj = CakeSponge.objects.filter(slug=sponge).first()
+            if not sponge_obj: raise Exception("Sponge not found")
+        else:
+            raise Exception("Sponge not given")
+        description = body.get("description")
+        available_toppings = body.get("available_toppings", "false").lower() in ["true", "1"]
+        toppings_slugs = json.loads(body.get("toppings", []))
+        sizes_data = json.loads( body.get("sizes",'[]'))
+        image = request.FILES.get("image")
+        print(image)
+        image_path = None
+        cake_obj = Cake.objects.filter(slug=body['slug']).first()
+        if not cake_obj: raise Exception("Cake not found")
+        cake_obj.name = name
+        cake_obj.description = description
+        cake_obj.available_toppings = available_toppings
+        if image is not None: 
+            image_path = default_storage.save(f"images/cakes/{image.name}", image)
+            cake_obj.image = image_path
+        cake_obj.sponge = sponge_obj
+        cake_obj.save()
+        cake_obj.sizes.all().delete()
+        for size in sizes_data: 
+            if "size" in size and "price" in size:
+                print(size)
+                CakeSize.objects.create(cake=cake_obj, size=size["size"], price=Decimal(size["price"]))
+        valid_toppings = Topping.objects.filter(slug__in=toppings_slugs)
+        cake_obj.toppings.set(valid_toppings)
+        cake_obj.save()
+        data['data']['success'] = True
+        return JsonResponse(data,status=200)
+    except Exception as e:
+        data['error'] = True
+        data['message'] = str(e)
+        print(e)
+        return JsonResponse(data,status=500)
 
 @api_view(['GET'])
 def get_home_cake_details(request):
     data = {'data':[],'error':False,'message':None}
     try:
-        cakes = Cake.objects.all()
+        admin_users = CustomUser.objects.filter(role='admin')
+        current_user = CustomUser.objects.filter(email=request.user.email)
+        users = admin_users | current_user
+        cakes = Cake.objects.filter(user__in = users)
         cakes_serialized = CakeHomeSerializer(cakes,many=True,context={'request':request})
         data['data'] = cakes_serialized.data
         return JsonResponse(data,status=200)
@@ -80,10 +140,25 @@ def get_full_cake_details(request, cake_slug):
 def get_toppings(request):
     data = {'data':[],'error':False,'message':None}
     try:
-        if request.user.role != "admin": raise Exception("Unauthorized")
+        # if request.user.role != "admin": raise Exception("Unauthorized")
         toppings_obj = Topping.objects.all()    
         toppings_serialized = ToppingsSerializer(toppings_obj,many=True)
         data['data'] = toppings_serialized.data
+        return JsonResponse(data,status=200)
+    except Exception as e:
+        data['error'] = True
+        data['message'] = str(e)
+        print(e)
+        return JsonResponse(data,status=500)
+    
+@api_view(['GET'])
+def get_sponges(request):
+    data = {'data':[],'error':False,'message':None}
+    try:
+        # if request.user.role != "admin": raise Exception("Unauthorized")
+        sponges_obj = CakeSponge.objects.all()
+        sponges_serialized = CakeSpongeSerializer(sponges_obj,many=True)
+        data['data'] = sponges_serialized.data
         return JsonResponse(data,status=200)
     except Exception as e:
         data['error'] = True
@@ -243,7 +318,10 @@ def get_order_details(request):
     data = {'data':[],'error':False,'message':None}
     try:
         user = request.user
-        orders = Order.objects.filter(user=user).order_by('created_at').reverse()
+        if user.role == "admin": 
+            orders = Order.objects.all().order_by('created_at').reverse()
+        else:
+            orders = Order.objects.filter(user=user).order_by('created_at').reverse()
         # if not orders: raise Exception("No orders found for this user")
         order_serialized = OrderSerializer(orders,many=True,context={'request':request})
         data['data'] = order_serialized.data
