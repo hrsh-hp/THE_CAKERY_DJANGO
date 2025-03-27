@@ -23,7 +23,7 @@ class CakeHomeSerializer(serializers.ModelSerializer):
     
     def get_price(self, obj):
     # Get the minimum price from CakeSize model
-        min_price = obj.sizes.aggregate(min_price=models.Min('price'))['min_price']
+        min_price = obj.sizes.aggregate(min_price=models.Min('price'))['min_price'] * obj.sponge.price
         return min_price if min_price is not None else 0.00
     
     def get_liked(self, obj):
@@ -222,10 +222,11 @@ class OrderSerializer(serializers.ModelSerializer):
     delivery_person = DeliveryPersonSerializer(read_only=True)
     is_reviewed = serializers.SerializerMethodField()
     user = serializers.SerializerMethodField()
+    user_phone = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
-        fields = ['slug','user','total_price','del_address','status','items','payment','created_at','delivery_person','is_reviewed']
+        fields = ['slug','user','user_phone','total_price','del_address','status','items','payment','created_at','delivery_person','is_reviewed']
 
     def get_items(self, obj):
         return CartItemsSerializer(obj.cart.cart_items.all(), many=True,context={'request':self.context.get('request')}).data
@@ -241,6 +242,11 @@ class OrderSerializer(serializers.ModelSerializer):
             return f"{obj.user.first_name} {obj.user.last_name}"
         return obj.user.email
     
+    def get_user_phone(self,obj):
+        if hasattr(obj.user, 'phone_no'):
+            return obj.user.phone_no
+        return 0000000000
+
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review

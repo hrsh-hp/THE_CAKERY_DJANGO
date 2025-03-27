@@ -16,7 +16,8 @@ def add_cake(request):
     data = {'data':{},'error':False,'message':None}
     try:
         user = request.user
-        if user.role != "admin" or user.role !='user': raise Exception("Unauthorized")
+        print(user.role)
+        if user.role != "admin" and user.role !='user': raise Exception("Unauthorized")
         body = request.data
         # print(body)
         if 'name' not in body or "description" not in body or "sizes" not in body and 'sponge' not in body: raise Exception("Parameters missing")
@@ -339,6 +340,8 @@ def get_order_details(request):
         user = request.user
         if user.role == "admin": 
             orders = Order.objects.all().order_by('created_at').reverse()
+        elif user.role == "delivery_person":
+            orders = Order.objects.filter(delivery_person__user=user).order_by('created_at').reverse()
         else:
             orders = Order.objects.filter(user=user).order_by('created_at').reverse()
         # if not orders: raise Exception("No orders found for this user")
@@ -358,10 +361,22 @@ def mark_order_complete(request):
         body = request.data
         if 'order_slug' not in body: raise Exception("Parameters missing")
         order_obj = Order.objects.filter(slug=body['order_slug']).first()
+        if request.user.role == 'delivery_person':
+            if order_obj.delivery_person.user != request.user: raise Exception("Unauthorized")
         if not order_obj: raise Exception("Can not find this order")
-        order_obj.status = "delivered"
-        payment_obj = Payment.objects.get(order=order_obj)
-        payment_obj.is_paid=True
+        if 'delivery_confirmation_code' in body:
+            delivery_confirmation_code = body.get('delivery_confirmation_code')
+        status = body.get('status')
+        if order_obj.status == 'confirmed' and status == 'out_for_delivery':
+            order_obj.status = status
+        elif order_obj.status == 'out_for_delivery' and status == 'delivered':
+            if not delivery_confirmation_code: raise Exception("Delivery confirmation code missing")
+            if order_obj.slug.split('_')[0] == delivery_confirmation_code:
+                order_obj.status = status
+                payment_obj = Payment.objects.get(order=order_obj)
+                payment_obj.is_paid=True
+            else: raise Exception("Invalid confirmation code")
+        else: raise Exception(f"Invalid status change {status} from {order_obj.status}")
         order_obj.save()
         data['data']['success']=True
         return JsonResponse(data,status=200)
@@ -468,7 +483,7 @@ def add_modified_to_cart(request):
             try:
                 extras_dict = json.loads(extras_dict)
             except json.JSONDecodeError:
-                raise ValueError("Invalid format for 'extras'. Expected JSON object.")
+                raise ("Invalid format for 'extras'. Expected JSON object.")
         extras_slugs = [slug for category in extras_dict.values() for slug in category]
         extras_objs = CakeExtra.objects.filter(slug__in=extras_slugs)
         extras_price = sum(extra.price for extra in extras_objs)
@@ -483,7 +498,7 @@ def add_modified_to_cart(request):
                 sponge=sponge_obj,
             )
             cake.toppings.set(topping_objs)
-            cake_size = CakeSize.objects.create(cake=cake, size=size, price=0)
+            cake_size = CakeSize.objects.create(cake=cake, size=size, price=1)
             cart = Cart.get_or_create_active_cart(user)
             modification = CustomModification.objects.create(
                 user=user,

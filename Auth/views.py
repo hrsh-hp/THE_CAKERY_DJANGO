@@ -26,7 +26,7 @@ def LoginView(request):
         user = CustomUser.objects.get(email=email)
         if not user: raise Exception("User with this email does not exist!")
         authenticated_user = authenticate(email=user.email,password=password)
-        Cart.objects.get_or_create(user=authenticated_user)
+        Cart.get_or_create_active_cart(user=authenticated_user)
         if not authenticated_user: raise Exception("Incorrect Email or Password!!")
         token, created = Token.objects.get_or_create(user=authenticated_user)
         data['data']['token']=token.key

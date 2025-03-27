@@ -200,6 +200,7 @@ class Order(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('confirmed', 'Confirmed'),
+        ('out_for_delivery', 'Out for Delivery'),
         ('delivered', 'Delivered'),
         ('cancelled', 'Cancelled'),
     ]
