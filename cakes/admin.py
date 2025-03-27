@@ -1,11 +1,13 @@
 from django.contrib import admin
-from cakes.models import Cake,CakeSize,CakeLike,Cart,CartItems,Topping,Order,Payment,Review,CakeSponge
+from cakes.models import Cake,CakeSize,CakeLike,Cart,CartItems,Topping,Order,Payment,Review,CakeSponge,CakeExtra,CustomModification
 
 # Register your models here.
 admin.site.register(Cake)
 admin.site.register(CakeSize)
 admin.site.register(CakeLike)
 admin.site.register(CakeSponge)
+admin.site.register(CakeExtra)
+admin.site.register(CustomModification) 
 admin.site.register(Cart)
 admin.site.register(CartItems)
 admin.site.register(Topping)

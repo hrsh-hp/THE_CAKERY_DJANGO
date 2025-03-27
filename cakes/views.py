@@ -5,9 +5,10 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
 from Auth.models import CustomUser, DeliveryPerson
-from cakes.serializers import CakeFullSerializer, CakeHomeSerializer, CakeSpongeSerializer, CartSerializer, OrderSerializer, ReviewSerializer, ToppingsSerializer
-from cakes.models import Cake,CakeLike,CakeSize, Cart, CartItems, Order, Payment, Review, Topping, CakeSponge
+from cakes.serializers import CakeFullModificationsSerializer, CakeFullSerializer, CakeHomeSerializer, CakeSpongeSerializer, CartSerializer, OrderSerializer, ReviewSerializer, ToppingsSerializer
+from cakes.models import Cake, CakeExtra,CakeLike,CakeSize, Cart, CartItems, CustomModification, Order, Payment, Review, Topping, CakeSponge
 from django.core.files.storage import default_storage
+from django.db import transaction
 
 # Create your views here.
 @api_view(['POST'])
@@ -129,6 +130,24 @@ def get_full_cake_details(request, cake_slug):
         if not cakes: raise Exception("Cake not found")
         cakes_serialized = CakeFullSerializer(cakes,context={'request':request})
         data['data'] = cakes_serialized.data
+        return JsonResponse(data,status=200)
+    except Exception as e:
+        data['error'] = True
+        data['message'] = str(e)
+        print(e)
+        return JsonResponse(data,status=500)
+
+@api_view(['GET'])
+def get_cake_details_for_modification(request):
+    data = {'data':[],'error':False,'message':None}
+    try:
+        # cakes = Cake.objects.filter(slug=cake_slug).first()
+        toppings = Topping.objects.all()
+        sponge = CakeSponge.objects.all()
+        # if not cakes: raise Exception("Cake not found")
+        # print(cakes)
+        cakes_modification_serialized = CakeFullModificationsSerializer({"toppings": toppings,"sponges":sponge}, context={"user": request.user,'request':request})
+        data['data'] = cakes_modification_serialized.data
         return JsonResponse(data,status=200)
     except Exception as e:
         data['error'] = True
@@ -421,3 +440,67 @@ def get_review_details(request,order_slug):
         data['message'] = str(e)
         print(e)
         return JsonResponse(data,status=500)
+    
+@api_view(['POST'])
+def add_modified_to_cart(request):
+    data = {'data': {}, 'error': False, 'message': None}
+    try:
+        user = request.user
+        body = request.data
+        if 'size' not in body or 'sponge_slug' not in body:
+            raise ValueError("Missing required parameters: 'size' or 'sponge_slug'")
+
+        size = body.get("size")
+        sponge_slug = body.get("sponge_slug")
+        quantity = int(body.get("quantity", 1))
+        toppings = json.loads(body.get("toppings", []))
+        extras_dict = body.get("extras", {})
+        user_request = body.get("user_request", "")
+        cake_image = request.FILES.get("cake_image")
+        sponge_obj = CakeSponge.objects.filter(slug=sponge_slug).first()
+        cake_name = f"Custom {sponge_obj.sponge} Cake"
+        topping_objs = Topping.objects.filter(slug__in=toppings)
+        if not sponge_obj:
+            raise ValueError(f"Invalid sponge_slug: '{sponge_slug}' not found")
+
+        # Validate and parse extras_dict if needed
+        if not isinstance(extras_dict, dict):
+            try:
+                extras_dict = json.loads(extras_dict)
+            except json.JSONDecodeError:
+                raise ValueError("Invalid format for 'extras'. Expected JSON object.")
+        extras_slugs = [slug for category in extras_dict.values() for slug in category]
+        extras_objs = CakeExtra.objects.filter(slug__in=extras_slugs)
+        extras_price = sum(extra.price for extra in extras_objs)
+        # Atomic transaction to ensure consistency
+        with transaction.atomic():
+            # Create the cake object
+            cake = Cake.objects.create(
+                name=cake_name,
+                description=user_request,
+                image=cake_image,
+                user=user,
+                sponge=sponge_obj,
+            )
+            cake.toppings.set(topping_objs)
+            cake_size = CakeSize.objects.create(cake=cake, size=size, price=0)
+            cart = Cart.get_or_create_active_cart(user)
+            modification = CustomModification.objects.create(
+                user=user,
+                cake=cake,
+                special_requests=user_request,
+                total_price=extras_price
+            )
+            modification.extras.set(extras_objs)
+            new_cart_item = CartItems.objects.create(
+                cart=cart, cake=cake, size=cake_size, quantity=quantity,custom_modification=modification
+            )
+            new_cart_item.toppings.set(topping_objs)
+        data['data']['success'] = True
+        return JsonResponse(data, status=200)
+
+    except Exception as e:  # Handle unexpected errors
+        data['error'] = True
+        data['message'] = "Something went wrong: " + str(e)
+        print(e)
+        return JsonResponse(data, status=500)

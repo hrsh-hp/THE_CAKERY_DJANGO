@@ -4,7 +4,6 @@ from django.db import models
 from Auth.models import CustomUser, DeliveryPerson
 from helpers import generate_unique_hash
 
-
 class Topping(models.Model):
     name = models.CharField(max_length=100, unique=True)
     price = models.DecimalField(max_digits=6, decimal_places=2)
@@ -17,11 +16,33 @@ class Topping(models.Model):
         if not self.slug:
             self.slug = generate_unique_hash()
         super(Topping, self).save(*args, **kwargs)
+
+class CakeExtra(models.Model):
+    CATEGORY_CHOICES = [
+        ("filling", "Filling"),
+        ("candle", "Candle"),
+        ("color", "Color"),
+        ("decoration", "Edible Decoration"),
+        ("packaging", "Packaging"),
+    ]
+
+    name = models.CharField(max_length=255)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)  # Defines type of extra
+    price = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
+    slug = models.SlugField(unique=True, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.get_category_display()} - {self.name} - ₹{self.price}"
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = generate_unique_hash()
+        super(CakeExtra, self).save(*args, **kwargs)
     
 class Cake(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
-    sponge = models.OneToOneField('CakeSponge', on_delete=models.CASCADE, related_name='sponges',null=True,blank=True)
+    sponge = models.ForeignKey('CakeSponge', on_delete=models.CASCADE, related_name='sponges',null=True,blank=True)
     image = models.ImageField(upload_to='images/cakes/',null=True,blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -43,10 +64,44 @@ class Cake(models.Model):
         if self.image:
             return f"{settings.MEDIA_URL}{self.image.name}"
         return None
+    
+class CustomModification(models.Model):
+    cake = models.ForeignKey(Cake, on_delete=models.CASCADE, related_name="custom_modifications")
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="custom_cake_modifications")
+
+    extras = models.ManyToManyField(CakeExtra, blank=True)
+    special_requests = models.TextField(null=True, blank=True)  # User's custom message
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        super(CustomModification, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.user.email} - {self.cake.name} Custom - ₹{self.total_price}"
+    
+    def get_extras_by_type(self, extra_type):
+        return self.extras.filter(type=extra_type)
+    
+    def get_fillings(self):
+        return self.fillings.filter(type="filling")
+
+    def get_candles(self):
+        return self.candles.filter(type="candle")
+
+    def get_colors(self):
+        return self.colors.filter(type="color")
+
+    def get_decorations(self):
+        return self.decorations.filter(type="decoration")
+
+    def get_packaging(self):
+        return self.packaging.filter(type="packaging")
+
 
 class CakeSponge(models.Model):
     sponge = models.CharField(max_length=50)
-    price = models.DecimalField(max_digits=6, decimal_places=2)
+    price = models.DecimalField(max_digits=6, decimal_places=2,default=0.00)
     slug = models.SlugField(unique=True,null=True,blank=True)
 
     def __str__(self):
@@ -60,7 +115,7 @@ class CakeSponge(models.Model):
 class CakeSize(models.Model):
     cake = models.ForeignKey(Cake,on_delete=models.CASCADE,related_name='sizes')
     size = models.CharField(max_length=50)
-    price = models.DecimalField(max_digits=6, decimal_places=2)
+    price = models.DecimalField(max_digits=6, decimal_places=2,default=0.00)
     slug = models.SlugField(unique=True,null=True,blank=True)
 
     def __str__(self):
@@ -119,6 +174,7 @@ class CartItems(models.Model):
     size = models.ForeignKey(CakeSize, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
     toppings = toppings = models.ManyToManyField(Topping, blank=True)
+    custom_modification = models.ForeignKey(CustomModification, null=True, blank=True, on_delete=models.SET_NULL)
     slug = models.SlugField(unique=True, null=True, blank=True)
 
     def __str__(self) -> str:
@@ -132,7 +188,8 @@ class CartItems(models.Model):
             base_price = self.size.price
             toppings_price = sum(t.price for t in self.toppings.all())
             sponge_price = self.cake.sponge.price
-            return (base_price + toppings_price + sponge_price) * self.quantity
+            extra_price = self.custom_modification.total_price if self.custom_modification else 0
+            return (base_price + toppings_price + sponge_price + extra_price) * self.quantity
         
     def save(self,*args, **kwargs):
         if not self.slug:

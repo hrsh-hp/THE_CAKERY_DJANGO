@@ -1,8 +1,9 @@
+from collections import defaultdict
 from rest_framework import serializers
 from django.db import models
 
 from Auth.serializers import DeliveryPersonSerializer
-from cakes.models import Cake, CakeLike, CakeSize, Cart, CartItems, Order, Payment, Review, Topping,CakeSponge
+from cakes.models import Cake, CakeExtra, CakeLike, CakeSize, Cart, CartItems, CustomModification, Order, Payment, Review, Topping,CakeSponge
 
 class CakeHomeSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
@@ -80,6 +81,81 @@ class CakeFullSerializer(serializers.ModelSerializer):
     def get_likes_count(self, obj):
         return obj.likes.filter(liked=True).count()
     
+class CakeExtraSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CakeExtra
+        fields = ['name','category','price','slug']
+
+    @classmethod
+    def group_by_category(cls):
+        cake_extras = CakeExtra.objects.all()
+        
+        grouped_data = defaultdict(list)
+        for extra in cake_extras:
+            grouped_data[extra.category].append(cls(extra).data)  # Serialize each item
+        
+        return grouped_data
+    
+class CakeFullModificationsSerializer(serializers.Serializer):
+    # cake = serializers.SerializerMethodField()
+    toppings = serializers.SerializerMethodField()
+    sponge = serializers.SerializerMethodField()
+    sizes = serializers.SerializerMethodField()
+    available_extras = serializers.SerializerMethodField()
+    user_modifications = serializers.SerializerMethodField()
+
+    # def get_cake(self, obj):
+    #     # cake_instance = self.context.get('cake')
+    #     cake_instance = obj.get('cake')
+    #     request = self.context.get('request')
+    #     print(cake_instance)
+    #     if cake_instance:
+    #         return CakeFullSerializer(cake_instance,context={'request':request}).data
+    #     return None
+    def get_toppings(self, obj):
+        topping_instance = obj.get('toppings')
+        request = self.context.get('request')
+        print(topping_instance)
+        return ToppingsSerializer(topping_instance,many=True,context={'request':request}).data
+
+    def get_sponge(self, obj):
+        sponges_instance = obj.get('sponges')
+        request = self.context.get('request')
+        return CakeSpongeSerializer(sponges_instance,many=True,context={'request':request}).data
+    
+    def get_sizes(self, obj):
+        sizes = [
+           "Small","Medium","Large","Extra Large"
+        ]
+        return sizes
+
+    def get_available_extras(self, obj):
+        """Uses CakeExtraSerializer to group extras by category"""
+        return CakeExtraSerializer.group_by_category()
+    
+    def get_user_modifications(self, obj):
+        """Fetches user's existing customizations if available."""
+        user = self.context.get('user')
+        cake = obj.get('cake')  # Since obj is a dictionary with "cake" key
+
+        if not user:
+            return None
+        
+        modification = CustomModification.objects.filter(user=user, cake=cake).first()
+        if not modification:
+            return None
+        
+        return {
+            "fillings": list(modification.fillings.values("id", "name")),
+            "candles": list(modification.candles.values("id", "name")),
+            "colors": list(modification.colors.values("id", "name")),
+            "decorations": list(modification.decorations.values("id", "name")),
+            "packaging": list(modification.packaging.values("id", "name")),
+            "special_requests": modification.special_requests,
+            "total_price": modification.total_price
+        }
+   
+
 class CartSerializer(serializers.ModelSerializer):
     cart_total = serializers.SerializerMethodField()
     user = serializers.SerializerMethodField()

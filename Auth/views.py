@@ -9,6 +9,8 @@ from Auth.models import Address, CustomUser
 from Auth.serializers import UserSerializer,FullUserDetailsSerializer
 from django.contrib.auth import authenticate
 
+from cakes.models import Cart
+
 # Create your views here.
 
 @api_view(['POST'])
@@ -24,6 +26,7 @@ def LoginView(request):
         user = CustomUser.objects.get(email=email)
         if not user: raise Exception("User with this email does not exist!")
         authenticated_user = authenticate(email=user.email,password=password)
+        Cart.objects.get_or_create(user=authenticated_user)
         if not authenticated_user: raise Exception("Incorrect Email or Password!!")
         token, created = Token.objects.get_or_create(user=authenticated_user)
         data['data']['token']=token.key
