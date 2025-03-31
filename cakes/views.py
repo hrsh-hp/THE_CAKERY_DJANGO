@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
 from Auth.models import CustomUser, DeliveryPerson
-from cakes.serializers import CakeFullModificationsSerializer, CakeFullSerializer, CakeHomeSerializer, CakeSpongeSerializer, CartSerializer, OrderSerializer, ReviewSerializer, ToppingsSerializer
+from cakes.serializers import CakeExtraSerializer, CakeFullModificationsSerializer, CakeFullSerializer, CakeHomeSerializer, CakeSpongeSerializer, CartSerializer, OrderSerializer, ReviewSerializer, ToppingsSerializer
 from cakes.models import Cake, CakeExtra,CakeLike,CakeSize, Cart, CartItems, CustomModification, Order, Payment, Review, Topping, CakeSponge
 from django.core.files.storage import default_storage
 from django.db import transaction
@@ -171,6 +171,34 @@ def get_toppings(request):
         print(e)
         return JsonResponse(data,status=500)
     
+@api_view(['POST'])
+def add_toppings(request):
+    data = {'data':{},'error':False,'message':None}
+    try:
+        if request.user.role != "admin": raise Exception("Unauthorized")
+        body = request.data
+        if 'name' not in body or 'price' not in body: raise Exception("Parameters missing")
+        print(body)
+        name = body.get('name')
+        price = body.get('price')
+        slug = body.get('slug')
+        if slug:
+            topping_obj = Topping.objects.filter(slug=slug).first()
+            if not topping_obj: raise Exception("Topping not found")
+            topping_obj.name = name
+            topping_obj.price = price
+            topping_obj.save()
+        else:   
+            topping_obj = Topping.objects.create(name=name,price=price)
+        data['data']['success'] = True
+        data['data']['topping'] = ToppingsSerializer(topping_obj).data
+        return JsonResponse(data,status=200) 
+    except Exception as e:
+        data['error'] = True
+        data['message'] = str(e)
+        print(e)
+        return JsonResponse(data,status=500)  
+    
 @api_view(['GET'])
 def get_sponges(request):
     data = {'data':[],'error':False,'message':None}
@@ -179,6 +207,78 @@ def get_sponges(request):
         sponges_obj = CakeSponge.objects.all()
         sponges_serialized = CakeSpongeSerializer(sponges_obj,many=True)
         data['data'] = sponges_serialized.data
+        return JsonResponse(data,status=200)
+    except Exception as e:
+        data['error'] = True
+        data['message'] = str(e)
+        print(e)
+        return JsonResponse(data,status=500)
+    
+@api_view(['POST'])
+def add_sponges(request):
+    data = {'data':{},'error':False,'message':None}
+    try:
+        if request.user.role != "admin": raise Exception("Unauthorized")
+        body = request.data
+        # print(body)
+        if 'name' not in body or 'price' not in body: raise Exception("Parameters missing")
+        name = body.get('name')
+        price = body.get('price')
+        slug = body.get('slug')
+        if slug:
+            sponge_obj = CakeSponge.objects.filter(slug=slug).first()
+            if not sponge_obj: raise Exception("Sponge not found")
+            sponge_obj.sponge = name 
+            sponge_obj.price = price
+            sponge_obj.save()
+        else:   
+            sponge_obj = CakeSponge.objects.create(sponge=name,price=price)
+        data['data']['success'] = True
+        data['data']['sponge'] = CakeSpongeSerializer(sponge_obj).data
+        return JsonResponse(data,status=200) 
+    except Exception as e:
+        data['error'] = True
+        data['message'] = str(e)
+        print(e)
+        return JsonResponse(data,status=500) 
+    
+@api_view(['GET'])
+def get_extras(request):
+    data = {'data':[],'error':False,'message':None}
+    try:
+        # if request.user.role != "admin": raise Exception("Unauthorized")
+        cake_extra_objs = CakeExtra.objects.all()
+        cake_extra_objs_serialized = CakeExtraSerializer(cake_extra_objs,many=True)
+        data['data'] = cake_extra_objs_serialized.data
+        return JsonResponse(data,status=200)
+    except Exception as e:
+        data['error'] = True
+        data['message'] = str(e)
+        print(e)
+        return JsonResponse(data,status=500)
+    
+@api_view(['POST'])
+def add_extras(request):
+    data = {'data':{},'error':False,'message':None}
+    try:
+        if request.user.role != "admin": raise Exception("Unauthorized")
+        body = request.data
+        if 'name' not in body or 'price' not in body and 'category' not in body: raise Exception("Parameters missing")
+        name = body.get('name')
+        price = body.get('price')
+        category = body.get('category')
+        slug = body.get('slug')
+        if slug:
+            extra_obj = CakeExtra.objects.filter(slug=slug).first()
+            if not extra_obj: raise Exception("Extra not found")
+            extra_obj.name = name
+            extra_obj.price = price
+            extra_obj.category = category
+            extra_obj.save()
+        else:
+            extra_obj = CakeExtra.objects.create(name=name,price=price,category=category)
+        data['data']['success'] = True
+        data['data']['extra'] = CakeExtraSerializer(extra_obj).data
         return JsonResponse(data,status=200)
     except Exception as e:
         data['error'] = True
@@ -511,6 +611,7 @@ def add_modified_to_cart(request):
                 cart=cart, cake=cake, size=cake_size, quantity=quantity,custom_modification=modification
             )
             new_cart_item.toppings.set(topping_objs)
+            new_cart_item.save()
         data['data']['success'] = True
         return JsonResponse(data, status=200)
 

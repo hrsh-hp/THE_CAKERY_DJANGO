@@ -1,5 +1,5 @@
 from django.urls import path,include
-from cakes.views import add_cake,edit_cake,get_home_cake_details,get_full_cake_details,like_cake,get_toppings,get_liked_cake_details,add_to_cart,get_cart_details,remove_cart_item,place_order,get_order_details,mark_order_cancel,mark_order_complete,submit_review,get_review_details,get_sponges,get_cake_details_for_modification,add_modified_to_cart
+from cakes.views import add_cake,edit_cake,get_home_cake_details,get_full_cake_details,like_cake,get_toppings,add_toppings,get_sponges,add_sponges,get_extras,add_extras,get_liked_cake_details,add_to_cart,get_cart_details,remove_cart_item,place_order,get_order_details,mark_order_cancel,mark_order_complete,submit_review,get_review_details,get_cake_details_for_modification,add_modified_to_cart
 
 urlpatterns = [
     path('add/',add_cake,name='add_cake'),
@@ -10,7 +10,11 @@ urlpatterns = [
     path('for_modification', get_cake_details_for_modification, name='modification'),
     path('like/',like_cake,name='like_cake'),
     path('toppings',get_toppings,name='get_toppings'),
+    path('topping/add/',add_toppings,name='add_toppings'),
+    path('sponge/add/',add_sponges,name='add_sponges'),
+    path('extra/add/',add_extras,name='add_extras'),
     path('sponges',get_sponges,name='get_sponges'),
+    path('extras',get_extras,name='get_extras'),
     path('cart',get_cart_details,name='get_cart_details'),
     path('cart/add/',add_to_cart,name='add_to_cart'),
     path('cart/add_modified/',add_modified_to_cart,name='add_modified_to_cart'),

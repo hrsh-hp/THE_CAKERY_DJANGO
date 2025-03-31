@@ -189,7 +189,7 @@ class CartItems(models.Model):
             toppings_price = sum(t.price for t in self.toppings.all())
             sponge_price = self.cake.sponge.price
             extra_price = self.custom_modification.total_price if self.custom_modification else 0
-            return (base_price + toppings_price + sponge_price + extra_price) * self.quantity
+            return (toppings_price + (sponge_price * base_price) + extra_price) * self.quantity
         
     def save(self,*args, **kwargs):
         if not self.slug:
@@ -206,7 +206,7 @@ class Order(models.Model):
     ]
 
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="orders")
-    cart = models.OneToOneField(Cart, on_delete=models.SET_NULL, null=True, blank=True)
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, null=True, blank=True)
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     del_address = models.TextField()
     # payment_method = models.CharField(max_length=50, default="UPI")
