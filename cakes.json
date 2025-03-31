@@ -1,0 +1,715 @@
+[
+{
+  "model": "cakes.topping",
+  "pk": 1,
+  "fields": {
+    "name": "Sprinkles",
+    "price": "40.00",
+    "slug": "321127_1743082421"
+  }
+},
+{
+  "model": "cakes.topping",
+  "pk": 2,
+  "fields": {
+    "name": "Choco chips",
+    "price": "80.00",
+    "slug": "135892_1743082421"
+  }
+},
+{
+  "model": "cakes.topping",
+  "pk": 3,
+  "fields": {
+    "name": "Fresh fruity",
+    "price": "60.00",
+    "slug": "223215_1743082421"
+  }
+},
+{
+  "model": "cakes.topping",
+  "pk": 4,
+  "fields": {
+    "name": "Tooty fruity",
+    "price": "50.00",
+    "slug": "777252_1743082421"
+  }
+},
+{
+  "model": "cakes.topping",
+  "pk": 5,
+  "fields": {
+    "name": "Almonds and nuts",
+    "price": "60.00",
+    "slug": "258069_1743082421"
+  }
+},
+{
+  "model": "cakes.cakeextra",
+  "pk": 1,
+  "fields": {
+    "name": "Premium quality whipping cream",
+    "category": "fillings",
+    "price": "100.00",
+    "slug": "765460_1743082634"
+  }
+},
+{
+  "model": "cakes.cakeextra",
+  "pk": 2,
+  "fields": {
+    "name": "Melted Chocolate",
+    "category": "fillings",
+    "price": "70.00",
+    "slug": "321045_1743082634"
+  }
+},
+{
+  "model": "cakes.cakeextra",
+  "pk": 3,
+  "fields": {
+    "name": "Ganache",
+    "category": "fillings",
+    "price": "100.00",
+    "slug": "215269_1743082634"
+  }
+},
+{
+  "model": "cakes.cakeextra",
+  "pk": 4,
+  "fields": {
+    "name": "Chocochips",
+    "category": "fillings",
+    "price": "80.00",
+    "slug": "253072_1743082634"
+  }
+},
+{
+  "model": "cakes.cakeextra",
+  "pk": 5,
+  "fields": {
+    "name": "Strawberry crush",
+    "category": "fillings",
+    "price": "70.00",
+    "slug": "142491_1743082634"
+  }
+},
+{
+  "model": "cakes.cakeextra",
+  "pk": 6,
+  "fields": {
+    "name": "Pineapple crush",
+    "category": "fillings",
+    "price": "70.00",
+    "slug": "643472_1743082634"
+  }
+},
+{
+  "model": "cakes.cakeextra",
+  "pk": 7,
+  "fields": {
+    "name": "Orange crush",
+    "category": "fillings",
+    "price": "70.00",
+    "slug": "288511_1743082634"
+  }
+},
+{
+  "model": "cakes.cakeextra",
+  "pk": 8,
+  "fields": {
+    "name": "Mango crush",
+    "category": "fillings",
+    "price": "70.00",
+    "slug": "153261_1743082635"
+  }
+},
+{
+  "model": "cakes.cakeextra",
+  "pk": 9,
+  "fields": {
+    "name": "Fresh fruit",
+    "category": "fillings",
+    "price": "100.00",
+    "slug": "215450_1743082635"
+  }
+},
+{
+  "model": "cakes.cakeextra",
+  "pk": 10,
+  "fields": {
+    "name": "Normal",
+    "category": "candles",
+    "price": "30.00",
+    "slug": "285405_1743082789"
+  }
+},
+{
+  "model": "cakes.cakeextra",
+  "pk": 11,
+  "fields": {
+    "name": "Number candle",
+    "category": "candles",
+    "price": "30.00",
+    "slug": "223328_1743082789"
+  }
+},
+{
+  "model": "cakes.cakeextra",
+  "pk": 12,
+  "fields": {
+    "name": "Trending candle",
+    "category": "candles",
+    "price": "60.00",
+    "slug": "229144_1743082789"
+  }
+},
+{
+  "model": "cakes.cakeextra",
+  "pk": 13,
+  "fields": {
+    "name": "Pink",
+    "category": "colors",
+    "price": "20.00",
+    "slug": "151500_1743082789"
+  }
+},
+{
+  "model": "cakes.cakeextra",
+  "pk": 14,
+  "fields": {
+    "name": "Red",
+    "category": "colors",
+    "price": "20.00",
+    "slug": "124507_1743082789"
+  }
+},
+{
+  "model": "cakes.cakeextra",
+  "pk": 15,
+  "fields": {
+    "name": "Black",
+    "category": "colors",
+    "price": "20.00",
+    "slug": "129763_1743082789"
+  }
+},
+{
+  "model": "cakes.cakeextra",
+  "pk": 16,
+  "fields": {
+    "name": "Purple",
+    "category": "colors",
+    "price": "20.00",
+    "slug": "237784_1743082789"
+  }
+},
+{
+  "model": "cakes.cakeextra",
+  "pk": 17,
+  "fields": {
+    "name": "Yellow",
+    "category": "colors",
+    "price": "20.00",
+    "slug": "316391_1743082789"
+  }
+},
+{
+  "model": "cakes.cakeextra",
+  "pk": 18,
+  "fields": {
+    "name": "Orange",
+    "category": "colors",
+    "price": "20.00",
+    "slug": "248245_1743082789"
+  }
+},
+{
+  "model": "cakes.cakeextra",
+  "pk": 19,
+  "fields": {
+    "name": "Blue",
+    "category": "colors",
+    "price": "20.00",
+    "slug": "270426_1743082789"
+  }
+},
+{
+  "model": "cakes.cakeextra",
+  "pk": 20,
+  "fields": {
+    "name": "Brown",
+    "category": "colors",
+    "price": "20.00",
+    "slug": "227974_1743082789"
+  }
+},
+{
+  "model": "cakes.cakeextra",
+  "pk": 21,
+  "fields": {
+    "name": "Green",
+    "category": "colors",
+    "price": "20.00",
+    "slug": "545772_1743082789"
+  }
+},
+{
+  "model": "cakes.cakeextra",
+  "pk": 22,
+  "fields": {
+    "name": "Custom designs",
+    "category": "decorations",
+    "price": "70.00",
+    "slug": "336537_1743082789"
+  }
+},
+{
+  "model": "cakes.cakeextra",
+  "pk": 23,
+  "fields": {
+    "name": "Theme Cake topper",
+    "category": "decorations",
+    "price": "100.00",
+    "slug": "123228_1743082789"
+  }
+},
+{
+  "model": "cakes.cakeextra",
+  "pk": 24,
+  "fields": {
+    "name": "Fondant decoration",
+    "category": "decorations",
+    "price": "160.00",
+    "slug": "249915_1743082789"
+  }
+},
+{
+  "model": "cakes.cakeextra",
+  "pk": 25,
+  "fields": {
+    "name": "Edible print",
+    "category": "decorations",
+    "price": "120.00",
+    "slug": "179734_1743082789"
+  }
+},
+{
+  "model": "cakes.cakeextra",
+  "pk": 26,
+  "fields": {
+    "name": "Boxes",
+    "category": "packaging",
+    "price": "20.00",
+    "slug": "176692_1743082789"
+  }
+},
+{
+  "model": "cakes.cakeextra",
+  "pk": 27,
+  "fields": {
+    "name": "Cake base",
+    "category": "packaging",
+    "price": "10.00",
+    "slug": "131653_1743082789"
+  }
+},
+{
+  "model": "cakes.cakeextra",
+  "pk": 28,
+  "fields": {
+    "name": "Ribbon",
+    "category": "packaging",
+    "price": "20.00",
+    "slug": "326367_1743082789"
+  }
+},
+{
+  "model": "cakes.cake",
+  "pk": 1,
+  "fields": {
+    "name": "Vanilla Cake",
+    "description": "A very good vanilla cake with all the add ons",
+    "sponge": 1,
+    "image": "images/cakes/1000232622.jpg",
+    "created_at": "2025-03-27T14:14:17.301Z",
+    "updated_at": "2025-03-27T14:14:17.326Z",
+    "available_toppings": true,
+    "slug": "277212_1743084857",
+    "user": 1,
+    "toppings": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  }
+},
+{
+  "model": "cakes.cake",
+  "pk": 2,
+  "fields": {
+    "name": "Custom Chocolate Cake",
+    "description": "Write Happy Birth Smit",
+    "sponge": 2,
+    "image": "images/cakes/scaled_1000232623.jpg",
+    "created_at": "2025-03-27T14:33:57.976Z",
+    "updated_at": "2025-03-27T15:31:38.790Z",
+    "available_toppings": true,
+    "slug": "228419_1743086037",
+    "user": 4,
+    "toppings": [
+      2
+    ]
+  }
+},
+{
+  "model": "cakes.cake",
+  "pk": 3,
+  "fields": {
+    "name": "Custom Vanilla Cake",
+    "description": "",
+    "sponge": 1,
+    "image": "",
+    "created_at": "2025-03-31T11:20:19.134Z",
+    "updated_at": "2025-03-31T11:20:19.134Z",
+    "available_toppings": true,
+    "slug": "236487_1743420019",
+    "user": 4,
+    "toppings": []
+  }
+},
+{
+  "model": "cakes.custommodification",
+  "pk": 1,
+  "fields": {
+    "cake": 2,
+    "user": 4,
+    "special_requests": "Write Happy Birth Smit ",
+    "total_price": "270.00",
+    "created_at": "2025-03-27T14:33:57.986Z",
+    "extras": [
+      1,
+      10,
+      13,
+      23,
+      28
+    ]
+  }
+},
+{
+  "model": "cakes.custommodification",
+  "pk": 2,
+  "fields": {
+    "cake": 3,
+    "user": 4,
+    "special_requests": "",
+    "total_price": "0.00",
+    "created_at": "2025-03-31T11:20:19.178Z",
+    "extras": []
+  }
+},
+{
+  "model": "cakes.cakesponge",
+  "pk": 1,
+  "fields": {
+    "sponge": "Vanilla",
+    "price": "70.00",
+    "slug": "884089_1743082485"
+  }
+},
+{
+  "model": "cakes.cakesponge",
+  "pk": 2,
+  "fields": {
+    "sponge": "Chocolate",
+    "price": "100.00",
+    "slug": "285098_1743082485"
+  }
+},
+{
+  "model": "cakes.cakesponge",
+  "pk": 3,
+  "fields": {
+    "sponge": "Strawberry",
+    "price": "80.00",
+    "slug": "193557_1743082485"
+  }
+},
+{
+  "model": "cakes.cakesponge",
+  "pk": 4,
+  "fields": {
+    "sponge": "Pineapple",
+    "price": "80.00",
+    "slug": "968989_1743082485"
+  }
+},
+{
+  "model": "cakes.cakesponge",
+  "pk": 5,
+  "fields": {
+    "sponge": "Orange",
+    "price": "80.00",
+    "slug": "244242_1743082485"
+  }
+},
+{
+  "model": "cakes.cakesponge",
+  "pk": 6,
+  "fields": {
+    "sponge": "Mixed fruit",
+    "price": "80.00",
+    "slug": "267261_1743082485"
+  }
+},
+{
+  "model": "cakes.cakesponge",
+  "pk": 7,
+  "fields": {
+    "sponge": "Red velvet",
+    "price": "80.00",
+    "slug": "218930_1743082485"
+  }
+},
+{
+  "model": "cakes.cakesize",
+  "pk": 1,
+  "fields": {
+    "cake": 1,
+    "size": "Small",
+    "price": "2.00",
+    "slug": "332059_1743084857"
+  }
+},
+{
+  "model": "cakes.cakesize",
+  "pk": 2,
+  "fields": {
+    "cake": 1,
+    "size": "Medium",
+    "price": "3.00",
+    "slug": "252664_1743084857"
+  }
+},
+{
+  "model": "cakes.cakesize",
+  "pk": 3,
+  "fields": {
+    "cake": 1,
+    "size": "Large",
+    "price": "4.00",
+    "slug": "108680_1743084857"
+  }
+},
+{
+  "model": "cakes.cakesize",
+  "pk": 4,
+  "fields": {
+    "cake": 2,
+    "size": "Small",
+    "price": "1.00",
+    "slug": "290702_1743086037"
+  }
+},
+{
+  "model": "cakes.cakesize",
+  "pk": 5,
+  "fields": {
+    "cake": 3,
+    "size": "Small",
+    "price": "1.00",
+    "slug": "122744_1743420019"
+  }
+},
+{
+  "model": "cakes.cart",
+  "pk": 1,
+  "fields": {
+    "user": 3,
+    "is_ordered": false,
+    "created_at": "2025-03-27T13:19:00.451Z",
+    "slug": "331044_1743081540"
+  }
+},
+{
+  "model": "cakes.cart",
+  "pk": 2,
+  "fields": {
+    "user": 1,
+    "is_ordered": false,
+    "created_at": "2025-03-27T13:20:32.491Z",
+    "slug": "226526_1743081632"
+  }
+},
+{
+  "model": "cakes.cart",
+  "pk": 3,
+  "fields": {
+    "user": 4,
+    "is_ordered": true,
+    "created_at": "2025-03-27T14:20:31.790Z",
+    "slug": "213479_1743085231"
+  }
+},
+{
+  "model": "cakes.cart",
+  "pk": 4,
+  "fields": {
+    "user": 4,
+    "is_ordered": true,
+    "created_at": "2025-03-27T15:45:35.902Z",
+    "slug": "172545_1743090335"
+  }
+},
+{
+  "model": "cakes.cart",
+  "pk": 5,
+  "fields": {
+    "user": 4,
+    "is_ordered": false,
+    "created_at": "2025-03-31T13:31:45.553Z",
+    "slug": "244929_1743427905"
+  }
+},
+{
+  "model": "cakes.cart",
+  "pk": 6,
+  "fields": {
+    "user": 5,
+    "is_ordered": true,
+    "created_at": "2025-03-31T15:21:59.887Z",
+    "slug": "790636_1743434519"
+  }
+},
+{
+  "model": "cakes.cart",
+  "pk": 7,
+  "fields": {
+    "user": 5,
+    "is_ordered": false,
+    "created_at": "2025-03-31T15:22:17.282Z",
+    "slug": "292413_1743434537"
+  }
+},
+{
+  "model": "cakes.cartitems",
+  "pk": 1,
+  "fields": {
+    "cart": 3,
+    "cake": 2,
+    "size": 4,
+    "quantity": 1,
+    "custom_modification": 1,
+    "slug": "165321_1743086037",
+    "toppings": [
+      2
+    ]
+  }
+},
+{
+  "model": "cakes.cartitems",
+  "pk": 2,
+  "fields": {
+    "cart": 4,
+    "cake": 3,
+    "size": 5,
+    "quantity": 1,
+    "custom_modification": 2,
+    "slug": "199940_1743420019",
+    "toppings": []
+  }
+},
+{
+  "model": "cakes.cartitems",
+  "pk": 3,
+  "fields": {
+    "cart": 6,
+    "cake": 1,
+    "size": 1,
+    "quantity": 1,
+    "custom_modification": null,
+    "slug": "309736_1743434523",
+    "toppings": []
+  }
+},
+{
+  "model": "cakes.order",
+  "pk": 1,
+  "fields": {
+    "user": 4,
+    "cart": 3,
+    "total_price": "500.00",
+    "del_address": "Lalbhai Dalpatbhai College Of Engineering Office, University Area, Ahmedabad, 380009, India",
+    "status": "delivered",
+    "delivery_person": 1,
+    "created_at": "2025-03-27T15:45:35.892Z",
+    "slug": "274762_1743090335"
+  }
+},
+{
+  "model": "cakes.order",
+  "pk": 2,
+  "fields": {
+    "user": 4,
+    "cart": 4,
+    "total_price": "120.00",
+    "del_address": "Lalbhai Dalpatbhai College Of Engineering Office, University Area, Ahmedabad, 380009, India",
+    "status": "confirmed",
+    "delivery_person": 1,
+    "created_at": "2025-03-31T13:31:45.507Z",
+    "slug": "184938_1743427905"
+  }
+},
+{
+  "model": "cakes.order",
+  "pk": 3,
+  "fields": {
+    "user": 5,
+    "cart": 6,
+    "total_price": "190.00",
+    "del_address": "a, v, x - 456789",
+    "status": "confirmed",
+    "delivery_person": 1,
+    "created_at": "2025-03-31T15:22:17.275Z",
+    "slug": "182521_1743434537"
+  }
+},
+{
+  "model": "cakes.payment",
+  "pk": 1,
+  "fields": {
+    "order": 1,
+    "payment_method": "upi",
+    "transaction_id": null,
+    "is_paid": false,
+    "created_at": "2025-03-27T15:45:35.898Z",
+    "slug": "316944_1743090335"
+  }
+},
+{
+  "model": "cakes.payment",
+  "pk": 2,
+  "fields": {
+    "order": 2,
+    "payment_method": "upi",
+    "transaction_id": null,
+    "is_paid": false,
+    "created_at": "2025-03-31T13:31:45.546Z",
+    "slug": "563401_1743427905"
+  }
+},
+{
+  "model": "cakes.payment",
+  "pk": 3,
+  "fields": {
+    "order": 3,
+    "payment_method": "upi",
+    "transaction_id": null,
+    "is_paid": false,
+    "created_at": "2025-03-31T15:22:17.279Z",
+    "slug": "316816_1743434537"
+  }
+}
+]

@@ -125,7 +125,7 @@ class CakeFullModificationsSerializer(serializers.Serializer):
     
     def get_sizes(self, obj):
         sizes = [
-           "Small","Medium","Large","Extra Large"
+           "0.3","0.5","1.0","1.5","2.0","2.5","3.0","3.5","4.0",
         ]
         return sizes
 

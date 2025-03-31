@@ -1,6 +1,7 @@
 from decimal import Decimal
 import json
 import random
+from tokenize import Double
 from django.shortcuts import render
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
@@ -598,7 +599,7 @@ def add_modified_to_cart(request):
                 sponge=sponge_obj,
             )
             cake.toppings.set(topping_objs)
-            cake_size = CakeSize.objects.create(cake=cake, size=size, price=1)
+            cake_size = CakeSize.objects.create(cake=cake, size=size, price=float(size))
             cart = Cart.get_or_create_active_cart(user)
             modification = CustomModification.objects.create(
                 user=user,
