@@ -26,7 +26,7 @@ Ensure your project directory and virtual environment are in the same folder lev
 
 ### Clone the Repository
 ```bash
-git clone [<repository-url>](https://github.com/hrsh-hp/THE_CAKERY_DJANGO.git)
+git clone https://github.com/hrsh-hp/THE_CAKERY_DJANGO.git
 ```
 
 ### Create a Virtual Environment (Outside the Project Folder)
