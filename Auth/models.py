@@ -17,7 +17,7 @@ class CustomUser(AbstractUser):
     slug = models.SlugField(unique=True, null=True, blank=True)
     is_verified = models.BooleanField(default=False)
     user_image = models.ImageField(upload_to = 'images/user/',null=True, blank=True)
-    phone_no = models.IntegerField(validators=[MaxValueValidator(999999999999),MinValueValidator(000000000000)],null=True, blank=True,default=None)
+    phone_no = models.BigIntegerField(validators=[MaxValueValidator(999999999999),MinValueValidator(000000000000)],null=True, blank=True,default=None)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     role = models.CharField(max_length=255,choices=ROLES,default='user')

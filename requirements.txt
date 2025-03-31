@@ -7,9 +7,6 @@ Django==5.1.6
 django-cors-headers==4.7.0
 djangorestframework==3.15.2
 dotenv==0.9.9
-pillow==11.1.0
-python-dotenv==1.0.1
-sqlparse==0.5.3
 executing==2.2.0
 ipykernel==6.29.5
 ipython==9.0.2
@@ -26,6 +23,7 @@ pillow==11.1.0
 platformdirs==4.3.7
 prompt_toolkit==3.0.50
 psutil==7.0.0
+psycopg2==2.9.10
 psycopg2-binary==2.9.10
 ptyprocess==0.7.0
 pure_eval==0.2.3

@@ -24,7 +24,7 @@ TEMPLATE_DIR = os.path.join(BASE_DIR,'templates')
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['clear-gently-coral.ngrok-free.app','localhost','127.0.0.1','.vercel.app']
 AUTH_USER_MODEL = "Auth.CustomUser"
@@ -81,23 +81,23 @@ WSGI_APPLICATION = 'cakery.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': 'Vazu2dz6NGS3ijJX',
-        'HOST': 'db.juuaxgticixurkrfzirp.supabase.co',  # Change if using a remote DB
-        # 'PORT': '16572',  # Default PostgreSQL port
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': os.getenv("POSTGRES_DATABASE"),
+#         'USER': os.getenv("POSTGRES_USER"),
+#         'PASSWORD': os.getenv("POSTGRES_PASSWORD"),
+#         'HOST': os.getenv("POSTGRES_HOST"),  # Could be a URL if hosted externally
+#         'PORT': '5432',  # Default PostgreSQL port
+#     }
+# }
 
 
 # Password validation
