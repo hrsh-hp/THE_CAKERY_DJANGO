@@ -189,7 +189,7 @@ class CartItems(models.Model):
             toppings_price = sum(t.price for t in self.toppings.all())
             sponge_price = self.cake.sponge.price
             extra_price = self.custom_modification.total_price if self.custom_modification else 0
-            return (toppings_price + (sponge_price * base_price) + extra_price) * self.quantity
+            return (toppings_price + (sponge_price + base_price) + extra_price) * self.quantity
         
     def save(self,*args, **kwargs):
         if not self.slug:

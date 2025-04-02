@@ -97,7 +97,7 @@ DATABASES = {
 #         'PASSWORD': os.getenv("POSTGRES_PASSWORD"),
 #         'HOST': os.getenv("POSTGRES_HOST"),  # Could be a URL if hosted externally
 #         'PORT': '5432',  # Default PostgreSQL port
-#     }
+#     } 
 # }
 
 # Password validation

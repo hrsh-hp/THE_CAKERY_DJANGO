@@ -567,6 +567,22 @@ def add_modified_to_cart(request):
             raise ValueError("Missing required parameters: 'size' or 'sponge_slug'")
 
         size = body.get("size")
+        sizes = {
+                    '0.3': 120.0, 
+                    '0.5': 200.0, 
+                    '1.0': 400.0, 
+                    '1.5': 600.0, 
+                    '2.0': 800.0, 
+                    '2.5': 1000.0, 
+                    '3.0': 1200.0, 
+                    '3.5': 1400.0, 
+                    '4.0': 1600.0
+                }
+        price = sizes.get(size, "Invalid size selected")  # Handles missing keys gracefully
+        if price == "Invalid size selected":
+            print("Error: The selected size is not available.")
+        else:
+            print(f"Price: {price}")
         sponge_slug = body.get("sponge_slug")
         quantity = int(body.get("quantity", 1))
         toppings = json.loads(body.get("toppings", []))
@@ -599,7 +615,7 @@ def add_modified_to_cart(request):
                 sponge=sponge_obj,
             )
             cake.toppings.set(topping_objs)
-            cake_size = CakeSize.objects.create(cake=cake, size=size, price=float(size))
+            cake_size = CakeSize.objects.create(cake=cake, size=size, price=price)
             cart = Cart.get_or_create_active_cart(user)
             modification = CustomModification.objects.create(
                 user=user,

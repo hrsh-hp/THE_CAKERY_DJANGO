@@ -23,7 +23,7 @@ class CakeHomeSerializer(serializers.ModelSerializer):
     
     def get_price(self, obj):
     # Get the minimum price from CakeSize model
-        min_price = obj.sizes.aggregate(min_price=models.Min('price'))['min_price'] * obj.sponge.price
+        min_price = obj.sizes.aggregate(min_price=models.Min('price'))['min_price'] + obj.sponge.price
         return min_price if min_price is not None else 0.00
     
     def get_liked(self, obj):
@@ -124,9 +124,18 @@ class CakeFullModificationsSerializer(serializers.Serializer):
         return CakeSpongeSerializer(sponges_instance,many=True,context={'request':request}).data
     
     def get_sizes(self, obj):
-        sizes = [
-           "0.3","0.5","1.0","1.5","2.0","2.5","3.0","3.5","4.0",
-        ]
+        sizes = {
+                    '0.3': 120.0, 
+                    '0.5': 200.0, 
+                    '1.0': 400.0, 
+                    '1.5': 600.0, 
+                    '2.0': 800.0, 
+                    '2.5': 1000.0, 
+                    '3.0': 1200.0, 
+                    '3.5': 1400.0, 
+                    '4.0': 1600.0
+                }
+
         return sizes
 
     def get_available_extras(self, obj):
