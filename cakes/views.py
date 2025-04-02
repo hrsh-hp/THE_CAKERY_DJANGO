@@ -415,10 +415,12 @@ def place_order(request):
         user = request.user
         body = request.data
         if 'del_address' not in body or 'payment_method' not in body or 'final_total' not in body: raise Exception("Parameters missing")
+        del_address = body.get('del_address')
+        if del_address == "Set Address for Delivery": raise Exception("Set proper address for delivery")
         cart = Cart.objects.filter(user=user,is_ordered=False).first()
         if not cart: raise Exception("Active cart not found")
         total_price = body.get('final_total')
-        order_obj = Order.objects.create(user=user, cart=cart,total_price=total_price,del_address=body.get('del_address'),status="confirmed")
+        order_obj = Order.objects.create(user=user, cart=cart,total_price=total_price,del_address=del_address,status="confirmed")
         order_obj.delivery_person = random.choice(DeliveryPerson.objects.all())
         order_obj.save()
         payment_method=body.get('payment_method')
